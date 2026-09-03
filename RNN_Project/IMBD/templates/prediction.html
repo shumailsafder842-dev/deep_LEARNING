@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Prediction | SentimentAI</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #070b16;
+            color: white;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: #6c5ce7;
+            filter: blur(190px);
+            opacity: 0.15;
+            top: -220px;
+            left: -150px;
+            z-index: -1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: #00cec9;
+            filter: blur(190px);
+            opacity: 0.1;
+            right: -200px;
+            bottom: -200px;
+            z-index: -1;
+        }
+
+        /* Navbar */
+
+        nav {
+            height: 75px;
+            padding: 0 7%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(7,11,22,0.7);
+            backdrop-filter: blur(15px);
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: #6c5ce7;
+        }
+
+        .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #b5bdce;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6c5ce7, #00cec9);
+            font-weight: 700;
+        }
+
+        .logout {
+            text-decoration: none;
+            color: #ff7675;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        /* Main */
+
+        .main {
+            max-width: 1000px;
+            margin: auto;
+            padding: 70px 25px;
+        }
+
+        .heading {
+            text-align: center;
+            margin-bottom: 45px;
+        }
+
+        .heading .badge {
+            display: inline-block;
+            padding: 7px 15px;
+            border-radius: 20px;
+            background: rgba(108,92,231,0.12);
+            color: #a99cff;
+            border: 1px solid rgba(108,92,231,0.2);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .heading h1 {
+            font-size: clamp(35px, 5vw, 55px);
+            margin-bottom: 12px;
+        }
+
+        .heading h1 span {
+            background: linear-gradient(90deg, #8e7dff, #00cec9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .heading p {
+            color: #929aae;
+            line-height: 1.7;
+        }
+
+        /* Prediction Card */
+
+        .prediction-card {
+            padding: 35px;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .label-row label {
+            font-weight: 700;
+        }
+
+        .counter {
+            color: #737c90;
+            font-size: 13px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 230px;
+            resize: vertical;
+            padding: 20px;
+            border-radius: 15px;
+            outline: none;
+            color: white;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 16px;
+            line-height: 1.7;
+            transition: 0.3s;
+        }
+
+        textarea::placeholder {
+            color: #636c80;
+        }
+
+        textarea:focus {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108,92,231,0.1);
+        }
+
+        .predict-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 17px;
+            border: none;
+            border-radius: 13px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(135deg, #6c5ce7, #8e7dff);
+            box-shadow: 0 12px 30px rgba(108,92,231,0.25);
+            transition: 0.3s;
+        }
+
+        .predict-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Result */
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 18px;
+            background: rgba(0,206,201,0.06);
+            border: 1px solid rgba(0,206,201,0.15);
+            text-align: center;
+        }
+
+        .result-title {
+            color: #8e99ad;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .result-value {
+            font-size: 35px;
+            font-weight: 800;
+            background: linear-gradient(90deg, #55efc4, #00cec9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .confidence {
+            margin-top: 8px;
+            color: #929aae;
+        }
+
+        /* Info */
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap: 18px;
+            margin-top: 25px;
+        }
+
+        .info {
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .info strong {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .info span {
+            color: #788196;
+            font-size: 13px;
+        }
+
+        @media(max-width: 700px) {
+
+            nav {
+                padding: 0 20px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .prediction-card {
+                padding: 22px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<nav>
+
+    <div class="logo">
+        Sentiment<span>AI</span>
+    </div>
+
+    <div class="user">
+
+        <div class="avatar">
+            {{ session.get('name', 'U')[0]|upper }}
+        </div>
+
+        <span class="user-name">
+            {{ session.get('name', 'User') }}
+        </span>
+
+        <a href="{{ url_for('logout') }}" class="logout">
+            Logout
+        </a>
+
+    </div>
+
+</nav>
+
+
+<div class="main">
+
+    <div class="heading">
+
+        <div class="badge">
+            🤖 AI SENTIMENT ENGINE
+        </div>
+
+        <h1>
+            Analyze Your <span>IMDB Review</span>
+        </h1>
+
+        <p>
+            Enter a movie review below and our trained RNN model
+            will predict its sentiment.
+        </p>
+
+    </div>
+
+
+    <div class="prediction-card">
+
+        <form action="{{ url_for('prediction') }}" method="POST">
+
+            <div class="label-row">
+
+                <label>
+                    Movie Review
+                </label>
+
+                <span class="counter">
+                    AI Text Analysis
+                </span>
+
+            </div>
+
+            <textarea
+                name="review"
+                placeholder="Example: This movie was absolutely amazing. The acting, story and cinematography were excellent..."
+                required
+            >{{ review if review else '' }}</textarea>
+
+            <button class="predict-btn" type="submit">
+                🧠 Analyze Sentiment
+            </button>
+
+        </form>
+
+
+        {% if error %}
+
+        <div class="result"
+            style="
+                background: rgba(255,118,117,0.06);
+                border-color: rgba(255,118,117,0.2);
+            ">
+
+            <div class="result-title">
+                ERROR
+            </div>
+
+            <div class="result-value"
+                style="
+                    font-size: 20px;
+                    background: none;
+                    -webkit-text-fill-color: #ff7675;
+                    color: #ff7675;
+                ">
+                {{ error }}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+
+        {% if result %}
+
+        <div class="result">
+
+            <div class="result-title">
+                AI PREDICTION
+            </div>
+
+            <div class="result-value">
+                {{ result }}
+            </div>
+
+            <div class="confidence">
+                Confidence: {{ probability }}%
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="info-grid">
+
+        <div class="info">
+            <strong>RNN</strong>
+            <span>Deep Learning Model</span>
+        </div>
+
+        <div class="info">
+            <strong>IMDB</strong>
+            <span>Movie Review Dataset</span>
+        </div>
+
+        <div class="info">
+            <strong>AI</strong>
+            <span>Sentiment Classification</span>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

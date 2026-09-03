@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SentimentAI | IMDB Review Analyzer</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            background: #070b16;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Background glow */
+        body::before {
+            content: "";
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: #6c5ce7;
+            filter: blur(180px);
+            opacity: 0.18;
+            top: -200px;
+            left: -150px;
+            z-index: -1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: #00cec9;
+            filter: blur(180px);
+            opacity: 0.12;
+            right: -150px;
+            bottom: -200px;
+            z-index: -1;
+        }
+
+        /* Navbar */
+        nav {
+            width: 100%;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(15px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .logo span {
+            color: #6c5ce7;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #dfe6e9;
+            padding: 10px 18px;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(108,92,231,0.15);
+            color: white;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #6c5ce7, #8e7dff);
+            color: white !important;
+            box-shadow: 0 8px 25px rgba(108,92,231,0.3);
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+            padding: 80px 7%;
+        }
+
+        .hero-content {
+            width: 58%;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: rgba(108,92,231,0.12);
+            border: 1px solid rgba(108,92,231,0.3);
+            color: #a99cff;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            font-size: clamp(45px, 6vw, 76px);
+            line-height: 1.05;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #8e7dff, #00cec9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: #aab2c5;
+            font-size: 18px;
+            line-height: 1.8;
+            max-width: 650px;
+            margin-bottom: 35px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            text-decoration: none;
+            padding: 15px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .primary-btn {
+            color: white;
+            background: linear-gradient(135deg, #6c5ce7, #8e7dff);
+            box-shadow: 0 12px 30px rgba(108,92,231,0.3);
+        }
+
+        .secondary-btn {
+            color: #dfe6e9;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .primary-btn:hover,
+        .secondary-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* AI Card */
+        .hero-card {
+            width: 370px;
+            padding: 35px;
+            border-radius: 25px;
+            background: linear-gradient(
+                145deg,
+                rgba(255,255,255,0.09),
+                rgba(255,255,255,0.025)
+            );
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+            backdrop-filter: blur(20px);
+        }
+
+        .brain {
+            width: 90px;
+            height: 90px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 45px;
+            background: linear-gradient(135deg, #6c5ce7, #00cec9);
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(108,92,231,0.3);
+        }
+
+        .hero-card h2 {
+            margin-bottom: 12px;
+        }
+
+        .hero-card p {
+            font-size: 14px;
+            color: #9ca5ba;
+            line-height: 1.7;
+        }
+
+        .status {
+            margin-top: 25px;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(0,206,201,0.08);
+            border: 1px solid rgba(0,206,201,0.18);
+            color: #55efc4;
+        }
+
+        /* Features */
+        .features {
+            padding: 80px 7%;
+            background: rgba(255,255,255,0.015);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .section-title p {
+            color: #929aae;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .feature {
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.035);
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-7px);
+            border-color: rgba(108,92,231,0.4);
+        }
+
+        .icon {
+            font-size: 30px;
+            margin-bottom: 18px;
+        }
+
+        .feature h3 {
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #929aae;
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #71798c;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        @media(max-width: 850px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-content {
+                width: 100%;
+            }
+
+            .hero p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .buttons {
+                justify-content: center;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links a:not(.login-btn) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">Sentiment<span>AI</span></div>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('login') }}" class="login-btn">Login</a>
+    </div>
+</nav>
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <div class="badge">
+            🧠 Powered by RNN Deep Learning
+        </div>
+
+        <h1>
+            Understand the
+            <span>Emotion</span>
+            Behind Every Review.
+        </h1>
+
+        <p>
+            SentimentAI uses Recurrent Neural Networks to analyze
+            IMDB movie reviews and intelligently determine whether
+            a review expresses a positive or negative sentiment.
+        </p>
+
+        <div class="buttons">
+            <a href="{{ url_for('login') }}" class="primary-btn">
+                Start Analyzing →
+            </a>
+
+            <a href="#features" class="secondary-btn">
+                Explore Features
+            </a>
+        </div>
+
+    </div>
+
+    <div class="hero-card">
+
+        <div class="brain">🧠</div>
+
+        <h2>AI Sentiment Engine</h2>
+
+        <p>
+            Enter any movie review and let our trained RNN model
+            understand the emotional meaning behind the text.
+        </p>
+
+        <div class="status">
+            ● RNN Model Ready
+        </div>
+
+    </div>
+
+</section>
+
+<section class="features" id="features">
+
+    <div class="section-title">
+        <h2>Built for Intelligent Analysis</h2>
+        <p>Powerful features behind the sentiment prediction system.</p>
+    </div>
+
+    <div class="feature-grid">
+
+        <div class="feature">
+            <div class="icon">🤖</div>
+            <h3>RNN Deep Learning</h3>
+            <p>
+                Uses recurrent neural networks to process sequential
+                text and understand contextual information.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="icon">🎬</div>
+            <h3>IMDB Reviews</h3>
+            <p>
+                Designed specifically for movie review sentiment
+                classification using the IMDB dataset.
+            </p>
+        </div>
+
+        <div class="feature">
+            <div class="icon">⚡</div>
+            <h3>Instant Prediction</h3>
+            <p>
+                Submit your review and receive an AI-generated
+                sentiment prediction within seconds.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    © 2026 SentimentAI · IMDB RNN Sentiment Analysis
+</footer>
+
+</body>
+</html>
