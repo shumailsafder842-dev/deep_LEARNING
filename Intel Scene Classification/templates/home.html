@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SceneSense AI – Intelligent Scene Classification</title>
+<style>
+  :root{--navy:#0b1f3a;--blue:#2563eb;--teal:#14b8a6;--bg:#f4f8fc;--grey:#64748b;--line:#e2e8f0}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--navy)}
+  a{text-decoration:none}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:16px 7%;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+  .logo{font-size:1.45rem;font-weight:800;color:var(--navy)}.logo span{color:var(--blue)}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--navy);font-weight:500}.nav-links a:hover{color:var(--blue)}
+  .btn{display:inline-block;padding:12px 28px;border-radius:12px;font-weight:600;border:2px solid transparent;cursor:pointer;transition:.25s}
+  .btn-main{background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff!important;box-shadow:0 8px 20px rgba(37,99,235,.28)}
+  .btn-main:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(37,99,235,.38)}
+  .btn-out{border-color:var(--blue);color:var(--blue)!important}.btn-out:hover{background:var(--blue);color:#fff!important}
+  .flash{margin:16px 7% 0;padding:12px 18px;border-radius:10px;font-weight:500}
+  .flash.success{background:#d1fae5;color:#065f46}.flash.warning{background:#fef3c7;color:#92400e}.flash.danger{background:#fee2e2;color:#991b1b}
+
+  .hero{background:linear-gradient(135deg,#0b1f3a 0%,#123a6b 55%,#0f766e 100%);color:#fff;padding:90px 7% 100px;display:flex;align-items:center;justify-content:space-between;gap:50px;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:300px}
+  .badge{display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:6px 16px;border-radius:50px;font-size:.85rem;font-weight:600}
+  .hero h1{font-size:3.3rem;line-height:1.12;margin:22px 0}
+  .hero h1 span{background:linear-gradient(90deg,#5eead4,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:#cbd5e1;font-size:1.1rem;line-height:1.75;max-width:540px;margin-bottom:32px}
+  .hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+  .hero .btn-out{border-color:#fff;color:#fff!important}.hero .btn-out:hover{background:#fff;color:var(--navy)!important}
+  .hero-visual{flex:1;min-width:280px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:420px}
+  .tile{aspect-ratio:1;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:2.6rem;transition:.3s}
+  .tile:hover{transform:translateY(-6px) scale(1.04);background:rgba(255,255,255,.2)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;max-width:1000px;margin:-50px auto 0;padding:0 7%;position:relative;z-index:5}
+  .stat{background:#fff;border-radius:18px;padding:26px;text-align:center;box-shadow:0 12px 34px rgba(11,31,58,.10)}
+  .stat h3{font-size:2rem;color:var(--blue)}.stat p{color:var(--grey);font-size:.92rem;margin-top:4px}
+
+  section{padding:80px 7%}
+  .eyebrow{text-align:center;color:var(--teal);font-weight:700;letter-spacing:2px;font-size:.8rem;text-transform:uppercase}
+  h2.title{text-align:center;font-size:2.3rem;margin:8px 0 10px}
+  .sub{text-align:center;color:var(--grey);max-width:560px;margin:0 auto 48px;line-height:1.6}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px 24px;text-align:center;transition:.3s}
+  .card:hover{transform:translateY(-8px);box-shadow:0 18px 40px rgba(11,31,58,.12);border-color:transparent}
+  .card .ic{font-size:3rem;margin-bottom:12px}
+  .card h3{text-transform:capitalize;margin-bottom:6px}.card p{color:var(--grey);line-height:1.55;font-size:.95rem}
+  .how{background:#fff}
+  .num{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;font-weight:700;font-size:1.25rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+
+  .cta{margin:0 7% 80px;border-radius:28px;background:linear-gradient(135deg,var(--blue),var(--teal));color:#fff;text-align:center;padding:60px 24px}
+  .cta h2{font-size:2.1rem;margin-bottom:12px}.cta p{opacity:.92;margin-bottom:26px}
+  .cta .btn{background:#fff;color:var(--blue)!important}
+  footer{background:var(--navy);color:#94a3b8;text-align:center;padding:28px;font-size:.9rem}
+  @media(max-width:700px){.hero h1{font-size:2.3rem}.nav-links a:not(.btn){display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('home') }}" class="logo">Scene<span>Sense</span> AI</a>
+  <div class="nav-links">
+    <a href="#categories">Categories</a>
+    <a href="#how">How it works</a>
+    {% if session.get('user') %}
+      <a href="{{ url_for('prediction') }}">Classify</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-out">Logout ({{ session['user'] }})</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-main">Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+{% endwith %}
+
+<header class="hero">
+  <div class="hero-text">
+    <span class="badge">🧠 Deep Learning · Convolutional Neural Network</span>
+    <h1>Understand any scene <span>in a single click</span></h1>
+    <p>Upload a photograph and our CNN instantly recognizes whether it shows buildings, forests, glaciers, mountains, the sea or a street — with a confidence score for every category.</p>
+    <div class="hero-btns">
+      {% if session.get('user') %}
+        <a href="{{ url_for('prediction') }}" class="btn btn-main">Start Classifying</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-main">Login to Classify</a>
+      {% endif %}
+      <a href="#how" class="btn btn-out">How it works</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="tile">🏢</div><div class="tile">🌲</div><div class="tile">🧊</div>
+    <div class="tile">⛰️</div><div class="tile">🌊</div><div class="tile">🛣️</div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><h3>6</h3><p>Scene categories</p></div>
+  <div class="stat"><h3>CNN</h3><p>Deep learning engine</p></div>
+  <div class="stat"><h3>&lt; 1s</h3><p>Average response</p></div>
+  <div class="stat"><h3>Secure</h3><p>Login protected</p></div>
+</div>
+
+<section id="categories">
+  <div class="eyebrow">Categories</div>
+  <h2 class="title">What can it recognize?</h2>
+  <p class="sub">Six natural and urban scene types, trained on thousands of labelled images.</p>
+  <div class="grid">
+    <div class="card"><div class="ic">🏢</div><h3>Buildings</h3><p>Skyscrapers, houses and architecture in city and town views.</p></div>
+    <div class="card"><div class="ic">🌲</div><h3>Forest</h3><p>Dense trees, woodland trails and green canopies.</p></div>
+    <div class="card"><div class="ic">🧊</div><h3>Glacier</h3><p>Ice fields, frozen valleys and snow-covered formations.</p></div>
+    <div class="card"><div class="ic">⛰️</div><h3>Mountain</h3><p>Peaks, ridges and rocky highland landscapes.</p></div>
+    <div class="card"><div class="ic">🌊</div><h3>Sea</h3><p>Oceans, beaches, coastlines and open water.</p></div>
+    <div class="card"><div class="ic">🛣️</div><h3>Street</h3><p>Roads, traffic and busy urban streets.</p></div>
+  </div>
+</section>
+
+<section id="how" class="how">
+  <div class="eyebrow">Workflow</div>
+  <h2 class="title">Three simple steps</h2>
+  <p class="sub">From login to result in seconds.</p>
+  <div class="grid">
+    <div class="card"><div class="num">1</div><h3>Sign in</h3><p>Log in securely to unlock the classifier.</p></div>
+    <div class="card"><div class="num">2</div><h3>Upload</h3><p>Choose a clear photo of any scene.</p></div>
+    <div class="card"><div class="num">3</div><h3>Get results</h3><p>See the predicted scene and probability for each class.</p></div>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>Ready to classify your first scene?</h2>
+  <p>Log in and let the model do the work.</p>
+  {% if session.get('user') %}
+    <a href="{{ url_for('prediction') }}" class="btn">Open Classifier</a>
+  {% else %}
+    <a href="{{ url_for('login') }}" class="btn">Get Started</a>
+  {% endif %}
+</div>
+
+<footer>© 2026 SceneSense AI · Intel Scene Classification using CNN</footer>
+</body>
+</html>
