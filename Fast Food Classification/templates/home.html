@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodVision AI – Fast Food Classifier</title>
+<style>
+  :root{--red:#e63946;--dark:#1d1d2b;--cream:#fff8f0;--yellow:#ffb703;--grey:#6b7280}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--dark)}
+  a{text-decoration:none}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:18px 7%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06);position:sticky;top:0;z-index:10}
+  .logo{font-size:1.5rem;font-weight:800;color:var(--dark)}.logo span{color:var(--red)}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--dark);font-weight:500}
+  .nav-links a:hover{color:var(--red)}
+  .btn{display:inline-block;padding:12px 28px;border-radius:50px;font-weight:600;border:none;cursor:pointer;transition:.25s}
+  .btn-red{background:var(--red);color:#fff!important}.btn-red:hover{background:#c62d39;transform:translateY(-2px)}
+  .btn-out{border:2px solid var(--red);color:var(--red)!important;background:transparent}.btn-out:hover{background:var(--red);color:#fff!important}
+  .flash{margin:16px 7% 0;padding:12px 18px;border-radius:10px;font-weight:500}
+  .flash.success{background:#d1fae5;color:#065f46}.flash.warning{background:#fef3c7;color:#92400e}.flash.danger{background:#fee2e2;color:#991b1b}
+  .hero{display:flex;align-items:center;justify-content:space-between;gap:40px;padding:80px 7%;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:300px}
+  .badge{background:#ffe8e8;color:var(--red);padding:6px 16px;border-radius:50px;font-size:.85rem;font-weight:600}
+  .hero h1{font-size:3.2rem;line-height:1.15;margin:20px 0}.hero h1 span{color:var(--red)}
+  .hero p{color:var(--grey);font-size:1.1rem;line-height:1.7;max-width:520px;margin-bottom:30px}
+  .hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+  .hero-emoji{flex:1;min-width:280px;display:flex;justify-content:center}
+  .circle{width:340px;height:340px;border-radius:50%;background:linear-gradient(135deg,var(--yellow),var(--red));display:flex;align-items:center;justify-content:center;font-size:7rem;gap:6px;box-shadow:0 25px 60px rgba(230,57,70,.35)}
+  section{padding:70px 7%}
+  h2.title{text-align:center;font-size:2.2rem;margin-bottom:10px}
+  .sub{text-align:center;color:var(--grey);margin-bottom:45px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:26px}
+  .card{background:#fff;padding:34px 26px;border-radius:20px;text-align:center;box-shadow:0 6px 24px rgba(0,0,0,.06);transition:.3s}
+  .card:hover{transform:translateY(-8px);box-shadow:0 14px 34px rgba(0,0,0,.12)}
+  .card .ic{font-size:3.4rem;margin-bottom:14px}
+  .card h3{margin-bottom:8px}.card p{color:var(--grey);line-height:1.6}
+  .steps{background:#fff}
+  .step-n{width:54px;height:54px;border-radius:50%;background:var(--red);color:#fff;font-weight:700;font-size:1.3rem;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .stats{background:var(--dark);color:#fff;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;text-align:center}
+  .stats h3{font-size:2.4rem;color:var(--yellow)}.stats p{color:#cbd5e1}
+  footer{text-align:center;padding:26px;color:var(--grey);font-size:.9rem}
+  @media(max-width:700px){.hero h1{font-size:2.3rem}.circle{width:240px;height:240px;font-size:4.5rem}.nav-links a:not(.btn){display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('home') }}" class="logo">Food<span>Vision</span> AI</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    {% if session.get('user') %}
+      <a href="{{ url_for('prediction') }}">Predict</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-out">Logout ({{ session['user'] }})</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-red">Login</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+{% endwith %}
+
+<header class="hero">
+  <div class="hero-text">
+    <span class="badge">🚀 Powered by Deep Learning (CNN)</span>
+    <h1>Identify your fast food <span>instantly</span> with AI</h1>
+    <p>Upload a photo and our Convolutional Neural Network tells you whether it's a Taco, a Pizza or a Donut — in a fraction of a second.</p>
+    <div class="hero-btns">
+      {% if session.get('user') %}
+        <a href="{{ url_for('prediction') }}" class="btn btn-red">Start Predicting</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-red">Login to Predict</a>
+      {% endif %}
+      <a href="#how" class="btn btn-out">Learn More</a>
+    </div>
+  </div>
+  <div class="hero-emoji"><div class="circle">🌮🍕🍩</div></div>
+</header>
+
+<section id="features">
+  <h2 class="title">What can it recognize?</h2>
+  <p class="sub">Three delicious categories, one smart model.</p>
+  <div class="cards">
+    <div class="card"><div class="ic">🌮</div><h3>Taco</h3><p>Folded tortillas with tasty fillings are detected with high accuracy.</p></div>
+    <div class="card"><div class="ic">🍕</div><h3>Pizza</h3><p>Slices or whole pies — the model spots cheesy toppings easily.</p></div>
+    <div class="card"><div class="ic">🍩</div><h3>Donut</h3><p>Glazed, sprinkled or filled — sweet rings never go unnoticed.</p></div>
+  </div>
+</section>
+
+<section id="how" class="steps">
+  <h2 class="title">How it works</h2>
+  <p class="sub">Three simple steps.</p>
+  <div class="cards">
+    <div class="card"><div class="step-n">1</div><h3>Login</h3><p>Sign in securely to unlock the predictor.</p></div>
+    <div class="card"><div class="step-n">2</div><h3>Upload</h3><p>Choose a clear photo of your food.</p></div>
+    <div class="card"><div class="step-n">3</div><h3>Get Result</h3><p>See the predicted class with confidence score.</p></div>
+  </div>
+</section>
+
+<section class="stats">
+  <div><h3>3</h3><p>Food Classes</p></div>
+  <div><h3>CNN</h3><p>Deep Learning Model</p></div>
+  <div><h3>&lt;1s</h3><p>Prediction Time</p></div>
+  <div><h3>100%</h3><p>Secure Login</p></div>
+</section>
+
+<footer>© 2026 FoodVision AI · Fast Food Classification using CNN</footer>
+</body>
+</html>

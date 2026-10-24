@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Predict – FoodVision AI</title>
+<style>
+  :root{--red:#e63946;--dark:#1d1d2b;--cream:#fff8f0;--yellow:#ffb703;--grey:#6b7280}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--dark);min-height:100vh}
+  a{text-decoration:none}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:18px 7%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .logo{font-size:1.5rem;font-weight:800;color:var(--dark)}.logo span{color:var(--red)}
+  .nav-links{display:flex;gap:22px;align-items:center}
+  .nav-links a{color:var(--dark);font-weight:500}.nav-links a:hover{color:var(--red)}
+  .user{background:#ffe8e8;color:var(--red);padding:6px 14px;border-radius:50px;font-size:.88rem;font-weight:600}
+  .btn{display:inline-block;padding:10px 24px;border-radius:50px;font-weight:600;border:2px solid var(--red);color:var(--red)!important;transition:.25s}
+  .btn:hover{background:var(--red);color:#fff!important}
+  .container{max-width:900px;margin:40px auto;padding:0 20px}
+  h1{text-align:center;font-size:2.2rem}.sub{text-align:center;color:var(--grey);margin:8px 0 32px}
+  .flash{padding:12px 18px;border-radius:10px;margin-bottom:18px;font-weight:500}
+  .flash.success{background:#d1fae5;color:#065f46}.flash.warning{background:#fef3c7;color:#92400e}.flash.danger{background:#fee2e2;color:#991b1b}
+  .panel{background:#fff;border-radius:24px;padding:36px;box-shadow:0 10px 36px rgba(0,0,0,.08)}
+  .drop{display:block;border:3px dashed #f3b4b9;border-radius:18px;padding:36px 20px;text-align:center;cursor:pointer;transition:.25s;background:#fffafa}
+  .drop:hover{border-color:var(--red);background:#fff1f2}
+  .drop .ic{font-size:3.2rem}.drop p{color:var(--grey);margin-top:8px}
+  .drop input{display:none}
+  #preview{display:none;max-width:260px;max-height:260px;border-radius:16px;margin:18px auto 0;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+  #fname{margin-top:10px;font-weight:600}
+  .submit{display:block;margin:24px auto 0;padding:14px 46px;border:none;border-radius:50px;background:var(--red);color:#fff;font-size:1.05rem;font-weight:700;cursor:pointer;transition:.25s}
+  .submit:hover{background:#c62d39;transform:translateY(-2px)}
+  .result{margin-top:34px;display:flex;gap:30px;align-items:center;flex-wrap:wrap;border-top:2px solid #f3f4f6;padding-top:30px}
+  .result img{width:230px;height:230px;object-fit:cover;border-radius:18px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+  .info{flex:1;min-width:240px}
+  .tag{color:var(--grey);font-size:.85rem;text-transform:uppercase;letter-spacing:1px}
+  .label{font-size:2.6rem;font-weight:800;color:var(--red);margin:4px 0 2px}
+  .conf{color:var(--grey);margin-bottom:18px}.conf b{color:var(--dark)}
+  .bar-row{margin-bottom:12px}
+  .bar-top{display:flex;justify-content:space-between;font-size:.9rem;font-weight:600;margin-bottom:4px}
+  .bar{height:10px;background:#f1f1f1;border-radius:50px;overflow:hidden}
+  .fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));border-radius:50px}
+  footer{text-align:center;padding:26px;color:var(--grey);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('home') }}" class="logo">Food<span>Vision</span> AI</a>
+  <div class="nav-links">
+    <a href="{{ url_for('home') }}">Home</a>
+    <span class="user">👤 {{ user }}</span>
+    <a href="{{ url_for('logout') }}" class="btn">Logout</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>🍔 Food Prediction</h1>
+  <p class="sub">Upload a Taco, Pizza or Donut image and let the AI identify it.</p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  {% endwith %}
+
+  <div class="panel">
+    <form method="POST" enctype="multipart/form-data">
+      <label class="drop" for="image">
+        <div class="ic">📷</div>
+        <b>Click to choose an image</b>
+        <p>PNG, JPG, JPEG or WEBP · max 5 MB</p>
+        <input type="file" id="image" name="image" accept="image/*" required>
+        <div id="fname"></div>
+        <img id="preview" alt="Preview">
+      </label>
+      <button class="submit" type="submit">Predict Now</button>
+    </form>
+
+    {% if result %}
+    <div class="result">
+      <img src="{{ result.image }}" alt="Uploaded food">
+      <div class="info">
+        <div class="tag">Prediction</div>
+        <div class="label">
+          {% if result.label == 'Taco' %}🌮{% elif result.label == 'Pizza' %}🍕{% else %}🍩{% endif %}
+          {{ result.label }}
+        </div>
+        <div class="conf">Confidence: <b>{{ result.confidence }}%</b></div>
+        {% for name, p in result.probs.items() %}
+        <div class="bar-row">
+          <div class="bar-top"><span>{{ name }}</span><span>{{ p }}%</span></div>
+          <div class="bar"><div class="fill" style="width: {{ p }}%"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<footer>© 2026 FoodVision AI · Fast Food Classification using CNN</footer>
+
+<script>
+  const input = document.getElementById('image');
+  input.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    document.getElementById('fname').textContent = f.name;
+    const p = document.getElementById('preview');
+    p.src = URL.createObjectURL(f);
+    p.style.display = 'block';
+  });
+</script>
+</body>
+</html>
